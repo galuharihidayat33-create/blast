@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Pesan Blasting Undangan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 20px auto;
+        }
+        h1, h2 {
+            color: #4CAF50;
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        textarea, input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            resize: vertical;
+        }
+        button.generate-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button.generate-button:hover {
+            background-color: #45a049;
+        }
+        #result-container {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .message-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .message-row span {
+            font-weight: bold;
+            flex: 1;
+        }
+        .buttons {
+            white-space: nowrap;
+        }
+        .copy-button, .wa-link {
+            display: inline-block;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .wa-link {
+            background-color: #25d366;
+            margin-left: 10px;
+        }
+        .copy-button:hover, .wa-link:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Generator Pesan Blasting Undangan</h1>
+    <p>Atur URL dan template pesan di bawah ini. Cukup atur sekali saja.</p>
+    
+    <label for="baseUrlInput">URL Undangan Web:</label>
+    <input type="text" id="baseUrlInput" placeholder="Contoh: https://divadanvian.arinvitation.my.id/">
+
+    <label for="templatePesan">Template Pesan:</label>
+    <textarea id="templatePesan" rows="10">Assalamu’alaikum warahmatullahi wabarakatuh,
+Yth. Bapak/Ibu/Saudara/i [nama_tamu],
+
+Dengan penuh rasa syukur, izinkan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.
+
+Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan turut mendoakan agar acara kami berjalan lancar serta menjadi keluarga yang sakinah, mawaddah, warahmah.
+
+Informasi lengkap mengenai waktu & tempat acara dapat dilihat pada undangan berikut:
+[url_undangan]
+
+Atas kehadiran dan doa restunya, kami ucapkan terima kasih.
+
+Wassalamu’alaikum warahmatullahi wabarakatuh.</textarea>
+    
+    <hr>
+
+    <p>Tempelkan data tamu di bawah ini. Formatnya harus: <strong>Nama Tamu</strong>. Setiap nama harus di baris baru.</p>
+
+    <label for="dataInput">Data Tamu:</label>
+    <textarea id="dataInput" placeholder="Tempel data di sini..."></textarea>
+
+    <button class="generate-button" onclick="generateMessages()">Generate Pesan</button>
+
+    <div id="result-container">
+        <h2>Daftar Pesan Siap Kirim:</h2>
+        <div id="messages-output"></div>
+    </div>
+</div>
+
+<script>
+    function safeEncode(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+    }
+
+    function safeDecode(str) {
+        return decodeURIComponent(escape(atob(str)));
+    }
+
+    function generateMessages() {
+        const baseUrl = document.getElementById('baseUrlInput').value.trim();
+        const dataInput = document.getElementById('dataInput').value;
+        const templatePesan = document.getElementById('templatePesan').value;
+        const messagesOutput = document.getElementById('messages-output');
+        
+        messagesOutput.innerHTML = '';
+
+        if (!baseUrl) {
+            messagesOutput.innerHTML = '<p style="color:red; text-align:center;">URL Undangan Web tidak boleh kosong.</p>';
+            return;
+        }
+
+        const lines = dataInput.split('\n').filter(line => line.trim() !== '');
+
+        if (lines.length === 0) {
+            messagesOutput.innerHTML = '<p style="color:red; text-align:center;">Tidak ada data tamu yang dimasukkan.</p>';
+            return;
+        }
+
+        lines.forEach(nama => {
+            const namaTamu = nama.trim();
+            if (!namaTamu) return;
+
+            const fullUrl = `${baseUrl}?to=${encodeURIComponent(namaTamu)}`;
+
+            const finalPesan = templatePesan
+                .replace(/\[nama_tamu\]/g, namaTamu)
+                .replace(/\[url_undangan\]/g, fullUrl);
+
+            const encoded = safeEncode(finalPesan);
+
+            const messageRow = document.createElement('div');
+            messageRow.className = 'message-row';
+            messageRow.innerHTML = `
+                <span>${namaTamu}</span>
+                <div class="buttons">
+                    <button class="copy-button" onclick="copyToClipboard('${encoded}')">Salin</button>
+                    <a href="https://wa.me/?text=${encodeURIComponent(finalPesan)}" target="_blank" class="wa-link">Kirim WA</a>
+                </div>
+            `;
+            messagesOutput.appendChild(messageRow);
+        });
+    }
+
+    function copyToClipboard(encodedText) {
+        const decodedText = safeDecode(encodedText);
+        const textarea = document.createElement('textarea');
+        textarea.value = decodedText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+        alert('Pesan berhasil disalin!');
+    }
+</script>
+
+</body>
+</html>
